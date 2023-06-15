@@ -10,7 +10,7 @@
   >
     {{ !onLine ? "Offline" : "online" }}
   </h1>
-  <div class="flex w-full space-x-36 m-10">
+  <div class="flex w-full space-x-36 m-10" v-if="loading==false">
     <div class="shadow-lg min-h-[750px] bg-[#393f4d] rounded-3xl w-1/2 p-10">
       <h1 class="w-full text-left p-5 text-2xl font-bold text-white/50">
         Products
@@ -117,6 +117,9 @@
       </div>
     </div>
   </div>
+  <div class="flex w-full space-x-36 m-10 justify-center" v-if="loading==true">
+    Loading.....
+  </div>
 </template>
 <script>
 import { useVuelidate } from "@vuelidate/core";
@@ -139,6 +142,7 @@ export default {
       productList: [],
       showBackOnline: navigator.onLine,
       onLine: navigator.onLine,
+      loading: false
     };
   },
   mounted() {
@@ -179,7 +183,11 @@ export default {
         let syncList = await db.select(
           "SELECT rowid,name, price FROM products where sync_status=1"
         );
-        console.log(syncList);
+        //console.log(syncList.length)
+        if(syncList.length!=0) {
+          
+          this.loading = true;
+        }
         try {
           await this.axios
             .post(this.$api_url + "product/save", syncList, {
@@ -201,6 +209,9 @@ export default {
                 });
               }
             });
+            setTimeout(() => {
+            this.loading = false;
+      }, 2000);
         } catch (e) {
           console.log("kkk" + e);
         }
