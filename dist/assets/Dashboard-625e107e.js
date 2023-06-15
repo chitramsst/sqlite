@@ -1,0 +1,1 @@
+import{_ as i,o as s,c as e}from"./index-cdfdb603.js";const t={data(){return{showLogin:!1,sidebarVisibility:!0}},watch:{sidebarVisibility(){this.sidebarVisibility=this.sidebarVisibility}}},r={class:"h-screen bg-white rounded-lg p-5 w-full"};function a(o,c,n,d,l,_){return s(),e("div",r)}const h=i(t,[["render",a]]);export{h as default};
