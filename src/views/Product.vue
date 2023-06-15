@@ -66,7 +66,7 @@
           class="w-full text-sm text-left text-gray-500 dark:text-gray-400"
         >
           <thead
-            class="text-xs text-gray-700 uppercase bg-gray-700 dark:bg-gray-700 dark:text-gray-400"
+            class="text-xs text-gray-700 bg-gray-700 dark:bg-gray-700 dark:text-gray-400"
           >
             <tr>
               <th scope="col" class="px-6 py-3 text-cyan-500 w-2/6">Product name</th>
@@ -114,6 +114,7 @@
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
                   class="h-5 w-5"
+                  @click="deleteData(row)"
                 >
                   <path
                     stroke-linecap="round"
@@ -144,6 +145,8 @@ import "vue-advanced-cropper/dist/theme.compact.css";
 import Modal from "../components/modals/ProductImageModal.vue";
 import SQLite from "tauri-plugin-sqlite-api";
 const db = await SQLite.open("./ecommerce.db");
+import { ask } from '@tauri-apps/api/dialog';
+import { confirm } from '@tauri-apps/api/dialog';
 
 export default {
   setup() {
@@ -196,9 +199,10 @@ export default {
           "SELECT rowid,name, price FROM products where sync_status=1"
         );
         if (syncList.length != 0) {
+          const yes = await ask('Are you sure to Sync data to server?', 'Sync');
+      if(yes){
           this.loading = true;
-        }
-        try {
+          try {
           await this.axios
             .post(this.$api_url + "product/save", syncList, {
               method: "POST",
@@ -222,6 +226,9 @@ export default {
         } catch (e) {
           console.log("kkk" + e);
         }
+      }
+        }
+  
       }
     },
     async save() {
@@ -288,8 +295,17 @@ export default {
         });
         console.log("index" + last_inserted_data);
         this.productList[index] = last_inserted_data[0];
+        this.name = "";
+        this.price = "";
+        this.editid = "";
       }
     },
+    async deleteData(row){
+      const yes = await ask('Are you sure?', 'Remove');
+      if(yes){
+
+      }
+    }
   },
   watch: {
     onLine(v) {
