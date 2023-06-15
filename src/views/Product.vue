@@ -168,13 +168,43 @@ export default {
       // await db.execute(
       //   `CREATE TABLE if not exists products (id INTEGER PRIMARY KEY AUTO INCREMENT, name TEXT, price INTEGER);`
       // );
-     await db.execute(
+      await db.execute(
         `CREATE TABLE if not exists products (name TEXT, price INTEGER, sync_status INTEGER);`
       );
     },
-    updateOnlineStatus(e) {
+    async updateOnlineStatus(e) {
       const { type } = e;
       this.onLine = type === "online";
+      if (this.onLine) {
+        let syncList = await db.select(
+          "SELECT rowid,name, price FROM products where sync_status=1"
+        );
+        console.log(syncList);
+        try {
+          await this.axios
+            .post(this.$api_url + "product/save", syncList, {
+              method: "POST",
+            })
+            .then((response) => {
+              if (response.data.success == true) {
+                // this.$toast.info("Product Saved Successfully");
+                console.log("ssdssadsasad")
+                let sql = `UPDATE products
+            SET sync_status = ?
+            WHERE sync_status = ?`;
+                let data = ['0', '1'];
+                db.execute(sql, data, function (err) {
+                  if (err) {
+                    return console.error(err.message);
+                  }
+                 console.log("ssdssadsasad")
+                });
+              }
+            });
+        } catch (e) {
+          console.log("kkk" + e);
+        }
+      }
     },
     async save() {
       const isFormCorrect = await this.v$.$validate();
@@ -193,20 +223,20 @@ export default {
             if (err) {
               return console.log(err.message);
             }
-            console.log(this.lastID)
+            console.log(this.lastID);
           }
         );
-        let row_id = await db.select(`SELECT last_insert_rowid() as id;`)
+        let row_id = await db.select(`SELECT last_insert_rowid() as id;`);
         let last_inserted_id = row_id[0].id;
-        console.log(last_inserted_id)
+        console.log(last_inserted_id);
         let last_inserted_data = await db.select(
-        "SELECT * FROM products where rowid = ?",
-        [last_inserted_id]
-      );
-      this.productList.unshift(last_inserted_data[0]);
-      this.name = "";
-      this.price = "";
-      this.v$.$reset();
+          "SELECT * FROM products where rowid = ?",
+          [last_inserted_id]
+        );
+        this.productList.unshift(last_inserted_data[0]);
+        this.name = "";
+        this.price = "";
+        this.v$.$reset();
       } catch (e) {
         console.log("kkk" + e);
       }
