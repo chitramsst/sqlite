@@ -5,16 +5,61 @@
     PRODUCT MANAGEMENT
   </h1>
   <h1
-    class="font-extrabold"
+    class="font-extrabold mb-20"
     :class="!onLine ? 'text-red-500' : 'text-green-500'"
   >
     {{ !onLine ? "Offline" : "online" }}
   </h1>
-  <div class="flex w-full space-x-36 m-10" v-if="loading==false">
-    <div class="shadow-lg min-h-[750px] bg-[#393f4d] rounded-3xl w-1/2 p-10">
-      <h1 class="w-full text-left p-5 text-2xl font-bold text-white/50">
+  <div class="flex flex-col w-full" v-if="loading == false">
+    <div class="shadow-lg w-full bg-black/10 rounded-t-xl p-5">
+      <div class="flex">
+        <!-- <h1 class="w-full text-left p-5 text-2xl font-bold text-cyan-500">
+          Add New Product
+        </h1> -->
+        <div class="flex items-center justify-end w-full p-5 space-x-10">
+          <button
+            class="rounded-xl px-10 font-bold text-md bg-cyan-500 text-white"
+            @click="save()"
+            v-if="editid == ''"
+          >
+            Save
+          </button>
+          <button
+            class="rounded-xl px-10 font-bold text-md bg-[#feda6a] text-black/50"
+            @click="update()"
+            v-if="editid != ''"
+          >
+            Update
+          </button>
+        </div>
+      </div>
+      <div class="gap-10 flex">
+        <div class="flex flex-col w-full p-5 space-y-5">
+          <lable class="font-medium text-xl text-[#daaaee]"> Name </lable>
+          <input
+            type="text"
+            class="h-15 w-full rounded-xl focus:border-stone-500 focus:ring-0 focus:inline-block text-xl text-black/50 bg-[#393f4d]/50 border-[#daaaee]/20"
+            
+            v-model="name"
+            :class="v$.name.$error ? 'dark:border-red-500' : ''"
+          />
+        </div>
+        <div class="flex flex-col w-full p-5 space-y-5">
+          <lable class="font-medium text-xl text-[#daaaee]"> Price </lable>
+          <input
+            type="text"
+            class="h-15 w-full rounded-xl focus:border-stone-500 focus:ring-0 focus:inline-block text-xl text-black/50 bg-[#393f4d]/50 border-[#daaaee]/20"
+            
+            v-model="price"
+            :class="v$.price.$error ? 'dark:border-red-500' : ''"
+          />
+        </div>
+      </div>
+    </div>
+    <div class="shadow-lg bg-white rounded-b-xl w-full p-10">
+      <!-- <h1 class="w-full text-left p-5 text-2xl font-bold text-white/50">
         Products
-      </h1>
+      </h1> -->
 
       <div class="">
         <table
@@ -24,16 +69,16 @@
             class="text-xs text-gray-700 uppercase bg-gray-700 dark:bg-gray-700 dark:text-gray-400"
           >
             <tr>
-              <th scope="col" class="px-6 py-3">Product name</th>
-              <th scope="col" class="px-6 py-3">Price</th>
-              <th scope="col" class="px-6 py-3"></th>
+              <th scope="col" class="px-6 py-3 text-cyan-500 w-2/6">Product name</th>
+              <th scope="col" class="px-6 py-3 text-cyan-500 w-2/6">Price</th>
+              <th scope="col" class="px-6 py-3 text-cyan-500 w-2/6"></th>
             </tr>
           </thead>
           <tbody>
             <tr
               class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"
               v-for="row in productList"
-              :key="row.id"
+              :key="row.rowid"
             >
               <th
                 scope="row"
@@ -47,12 +92,13 @@
               <td class="px-6 py-4 flex space-x-10">
                 <svg
                   fill="none"
-                  stroke="currentColor"
+                  stroke="#19edc3"
                   stroke-width="1.5"
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
                   class="h-5 w-5"
+                  @click="edit(row)"
                 >
                   <path
                     stroke-linecap="round"
@@ -62,7 +108,7 @@
                 </svg>
                 <svg
                   fill="none"
-                  stroke="currentColor"
+                  stroke="#daaaee"
                   stroke-width="1.5"
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
@@ -81,43 +127,11 @@
         </table>
       </div>
     </div>
-    <div class="max-h-[500px] shadow-lg rounded-3xl w-2/6 bg-[#393f4d] p-10">
-      <h1 class="w-full text-left p-5 text-2xl font-bold text-black/50">
-        Add New Product
-      </h1>
-      <div class="gap-10">
-        <div class="flex flex-col w-full p-5 space-y-5">
-          <lable class="font-medium text-xl text-white/50"> Name </lable>
-          <input
-            type="text"
-            class="h-15 w-full rounded-xl focus:border-stone-500 focus:ring-0 focus:inline-block text-xl text-black/50 bg-[#393f4d]/50"
-            placeholder="Enter name"
-            v-model="name"
-            :class="v$.name.$error ? 'dark:border-red-500' : ''"
-          />
-        </div>
-        <div class="flex flex-col w-full p-5 space-y-5">
-          <lable class="font-medium text-xl text-white/50"> Price </lable>
-          <input
-            type="text"
-            class="h-15 w-full rounded-xl focus:border-stone-500 focus:ring-0 focus:inline-block text-xl text-black/50 bg-[#393f4d]/50"
-            placeholder="Enter Price"
-            v-model="price"
-            :class="v$.price.$error ? 'dark:border-red-500' : ''"
-          />
-        </div>
-      </div>
-      <div class="flex items-center justify-end w-full p-10 space-x-10">
-        <button
-          class="rounded-xl px-10 font-bold text-md bg-[#feda6a] text-black/50"
-          @click="save()"
-        >
-          Save
-        </button>
-      </div>
-    </div>
   </div>
-  <div class="flex w-full space-x-36 m-10 justify-center" v-if="loading==true">
+  <div
+    class="flex w-full space-x-36 m-10 justify-center"
+    v-if="loading == true"
+  >
     Loading.....
   </div>
 </template>
@@ -142,7 +156,8 @@ export default {
       productList: [],
       showBackOnline: navigator.onLine,
       onLine: navigator.onLine,
-      loading: false
+      loading: false,
+      editid: "",
     };
   },
   mounted() {
@@ -164,14 +179,11 @@ export default {
     },
     async getData() {
       this.productList = await db.select(
-        "SELECT * FROM products order by rowid desc LIMIT $1 OFFSET $2",
+        "SELECT rowid,name, price FROM products order by rowid desc LIMIT $1 OFFSET $2",
         [5, 0]
       );
     },
     async createSchema() {
-      // await db.execute(
-      //   `CREATE TABLE if not exists products (id INTEGER PRIMARY KEY AUTO INCREMENT, name TEXT, price INTEGER);`
-      // );
       await db.execute(
         `CREATE TABLE if not exists products (name TEXT, price INTEGER, sync_status INTEGER);`
       );
@@ -183,9 +195,7 @@ export default {
         let syncList = await db.select(
           "SELECT rowid,name, price FROM products where sync_status=1"
         );
-        //console.log(syncList.length)
-        if(syncList.length!=0) {
-          
+        if (syncList.length != 0) {
           this.loading = true;
         }
         try {
@@ -195,23 +205,20 @@ export default {
             })
             .then((response) => {
               if (response.data.success == true) {
-                // this.$toast.info("Product Saved Successfully");
-                console.log("ssdssadsasad")
                 let sql = `UPDATE products
             SET sync_status = ?
             WHERE sync_status = ?`;
-                let data = ['0', '1'];
+                let data = ["0", "1"];
                 db.execute(sql, data, function (err) {
                   if (err) {
                     return console.error(err.message);
                   }
-                 console.log("ssdssadsasad")
                 });
               }
             });
-            setTimeout(() => {
+          setTimeout(() => {
             this.loading = false;
-      }, 2000);
+          }, 2000);
         } catch (e) {
           console.log("kkk" + e);
         }
@@ -250,6 +257,37 @@ export default {
         this.v$.$reset();
       } catch (e) {
         console.log("kkk" + e);
+      }
+    },
+    edit(row) {
+      this.name = row.name;
+      this.price = row.price;
+      this.editid = row.rowid;
+    },
+    async update() {
+      if (this.rowid != "") {
+        let sql = `UPDATE products
+            SET name = ?, price = ?
+            WHERE rowid = ?`;
+        let data = [this.name, this.price, this.editid];
+        console.log(data);
+        db.execute(sql, data, function (err) {
+          console.log("this.editid" + this.editid);
+          if (err) {
+            return console.error(err.message);
+          }
+        });
+        console.log("this.editid" + this.editid);
+
+        let last_inserted_data = await db.select(
+          "SELECT * FROM products where rowid = ?",
+          [this.editid]
+        );
+        let index = this.productList.findIndex((e) => {
+          return e.rowid == this.editid;
+        });
+        console.log("index" + last_inserted_data);
+        this.productList[index] = last_inserted_data[0];
       }
     },
   },
